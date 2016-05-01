@@ -59,7 +59,7 @@ class Base(Settings):
 
     # Hosts/domain names that are valid for this site; required if DEBUG is False
     # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-    ALLOWED_HOSTS = []
+    ALLOWED_HOSTS = [competitions.see4c.eu]
 
     ADMINS = (
         # ('Your Name', 'your_email@example.com'),
@@ -78,8 +78,8 @@ class Base(Settings):
     LANGUAGE_CODE = 'en-us'
 
     SITE_ID = 1
-    CODALAB_SITE_DOMAIN = 'codalab.org'
-    CODALAB_SITE_NAME = 'CodaLab'
+    CODALAB_SITE_DOMAIN = 'see4c.eu'
+    CODALAB_SITE_NAME = 'competitions'
 
     # If you set this to False, Django will make some optimizations so as not
     # to load the internationalization machinery.
