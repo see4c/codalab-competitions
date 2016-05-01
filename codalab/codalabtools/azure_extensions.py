@@ -46,7 +46,8 @@ class AzureServiceBusQueue(Queue):
     polling_timeout = 60
 
     def __init__(self, namespace, key, issuer, name):
-        self.service = ServiceBusService(service_namespace=namespace, account_key=key, issuer=issuer)
+        #self.service = ServiceBusService(service_namespace=namespace, account_key=key, issuer=issuer)
+        self.service = ServiceBusService(service_namespace=namespace,  shared_access_key_value=key, shared_access_key_name=issuer)
         self.name = name
         self.max_retries = 3
         self.wait = lambda count: 1.0*(2**count)
