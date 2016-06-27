@@ -11,6 +11,10 @@ class ClUser(auth_models.AbstractUser):
 
     # Profile details
     organization_or_affiliation = models.CharField(max_length=255, null=True, blank=True)
+    biography = models.TextField(null=True, blank=True)
+    webpage = models.URLField(null=True, blank=True)
+    linkedin = models.CharField(max_length=255, null=True, blank=True)
+    ORCID = models.CharField(max_length=255, null=True, blank=True)
 
     team_name = models.CharField(max_length=64, null=True, blank=True)
     team_members = models.TextField(null=True, blank=True)
@@ -22,3 +26,5 @@ class ClUser(auth_models.AbstractUser):
     bibtex = models.TextField(null=True, blank=True)
 
     contact_email = models.EmailField(null=True, blank=True)
+
+    public_profile = models.BooleanField(default=False)

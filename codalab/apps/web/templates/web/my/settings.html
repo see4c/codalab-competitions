@@ -9,6 +9,10 @@
 {% block extra_head %}
 {# include extra JS stuff here #}
 {% endblock %}
+{% block extra_scripts %}
+    <script src="{{ STATIC_URL }}tiny_mce/tiny_mce.js"></script>
+    {{ form.media }}
+{% endblock extra_scripts %}
 
 {% block content %}
 <form method="POST" action=".">{% csrf_token %}
@@ -62,8 +66,39 @@
 
     {% if ENABLE_COMPETITIONS %}
 
+    <h3><b>Extended profile</b></h3>
+    <div class="row">
+        <div class="col-sm-12">
+            <table class="table table-striped affiliation">
+                <tbody>
+                    <tr>
+                        <th>{{ form.organization_or_affiliation.label }}</th>
+                        <td>{{ form.organization_or_affiliation }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ form.webpage.label }}</th>
+                        <td>{{ form.webpage }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ form.linkedin.label }}</th>
+                        <td>{{ form.linkedin }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ form.ORCID.label }}</th>
+                        <td>{{ form.ORCID }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ form.biography.label }}</th>
+                        <td>{{ form.biography }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <h3><b>Competition settings</b></h3>
 
+    <!--
     <div class="row">
         <div class="col-sm-12">
             <table class="table table-striped affiliation">
@@ -80,7 +115,7 @@
             </table>
         </div>
     </div>
-
+    -->
     <div class="row">
         <div class="col-sm-12">
 
@@ -101,6 +136,10 @@
                     <tr>
                         <th>{{ form.email_on_submission_finished_successfully.label }}</th>
                         <td>{{ form.email_on_submission_finished_successfully }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ form.public_profile.label }}</th>
+                        <td>{{ form.public_profile }}</td>
                     </tr>
                 </tbody>
             </table>

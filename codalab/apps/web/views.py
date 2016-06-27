@@ -334,6 +334,11 @@ class UserDetailView(DetailView):
             'Project URL': self.object.project_url,
             'Publication URL': self.object.publication_url,
             'Bibtex': self.object.bibtex,
+            'Public Profile': self.object.public_profile,
+            'Biography': self.object.biography,
+            'Web Page': self.object.webpage,
+            'ORCID': self.object.ORCID,
+            'Linkedin': self.object.linkedin,
         }
         return context_data
 

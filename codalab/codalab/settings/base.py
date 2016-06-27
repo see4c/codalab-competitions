@@ -17,7 +17,9 @@ class Base(Settings):
     DOMAIN_NAME = 'localhost'
     SERVER_NAME = 'localhost'
     DEBUG = False
-    TEMPLATE_DEBUG = DEBUG
+    TEMPLATE_DEBUG = True
+
+    #TEMPLATE_DEBUG = DEBUG
     COMPILE_LESS = True # is the less -> css already done or would you like less.js to compile it on render
     LOCAL_MATHJAX = False # see prep_for_offline
     LOCAL_ACE_EDITOR = False # see prep_for_offline
@@ -79,7 +81,7 @@ class Base(Settings):
     LANGUAGE_CODE = 'en-us'
 
     SITE_ID = 1
-    CODALAB_SITE_DOMAIN = 'see4c.eu'
+    CODALAB_SITE_DOMAIN = 'localhost'
     CODALAB_SITE_NAME = 'competitions'
 
     # If you set this to False, Django will make some optimizations so as not
@@ -173,6 +175,17 @@ class Base(Settings):
         'guardian.backends.ObjectPermissionBackend',
     )
 
+    AWESOME_AVATAR = {
+        'width': 100,
+        'height': 100,
+
+        'select_area_width': 400,
+        'select_area_height': 300,
+
+        'save_quality': 90,
+        'save_format': 'png',
+    }
+
     INSTALLED_APPS = (
         # Standard django apps
         'django.contrib.auth',
@@ -208,6 +221,9 @@ class Base(Settings):
         # Django Nose !!Important!! This needs to come after South.
         'django_nose',
 
+        # Team avatars
+        'awesome_avatar',
+
         # CodaLab apps
         'apps.authenz',
         'apps.jobs',
@@ -218,6 +234,7 @@ class Base(Settings):
         'apps.forums',
         'apps.coopetitions',
         'apps.common',
+        'apps.teams',
 
         # Authentication app, enables social authentication
         'allauth',

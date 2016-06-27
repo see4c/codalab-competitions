@@ -10,12 +10,16 @@ class CodalabSignupForm(forms.Form):
     publication_url = forms.URLField(required=False)
     organization_or_affiliation = forms.CharField(max_length=255, required=False)
     bibtex = forms.CharField(required=False)
+    biography = forms.Textarea()
+    webpage = forms.CharField(max_length=255, required=False)
+    ORCID = forms.CharField(max_length=255, required=False)
 
     class Meta():
         widgets = {
             'team_members': forms.Textarea(attrs={"class": "form-control"}),
             'method_description': forms.Textarea(attrs={"class": "form-control"}),
-            'bibtex': forms.Textarea(attrs={"class": "form-control"})
+            'bibtex': forms.Textarea(attrs={"class": "form-control"}),
+            'biography': forms.Textarea(attrs={"class": "form-control"})
         }
 
     def save(self, new_user):
@@ -28,6 +32,9 @@ class CodalabSignupForm(forms.Form):
             'project_url': self.cleaned_data['project_url'],
             'publication_url': self.cleaned_data['publication_url'],
             'bibtex': self.cleaned_data['bibtex'],
+            'biography': self.cleaned_data['biography'],
+            'webpage': self.cleaned_data['webpage'],
+            'ORCID': self.cleaned_data['ORCID'],
         })
         new_user.save()
 

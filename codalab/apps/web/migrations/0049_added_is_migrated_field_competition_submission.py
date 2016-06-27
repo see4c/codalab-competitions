@@ -13,10 +13,30 @@ class Migration(SchemaMigration):
                       self.gf('django.db.models.fields.BooleanField')(default=False),
                       keep_default=False)
 
+        # Adding field 'Competition.enable_teams'
+        db.add_column(u'web_competition', 'enable_teams',
+                      self.gf('django.db.models.fields.BooleanField')(default=True),
+                      keep_default=False)
+
+        # Adding M2M table for field teams on 'Competition'
+        m2m_table_name = db.shorten_name(u'web_competition_teams')
+        db.create_table(m2m_table_name, (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('competition', models.ForeignKey(orm[u'web.competition'], null=False)),
+            ('team', models.ForeignKey(orm[u'teams.team'], null=False))
+        ))
+        db.create_unique(m2m_table_name, ['competition_id', 'team_id'])
+
 
     def backwards(self, orm):
         # Deleting field 'CompetitionSubmission.is_migrated'
         db.delete_column(u'web_competitionsubmission', 'is_migrated')
+
+        # Deleting field 'Competition.enable_teams'
+        db.delete_column(u'web_competition', 'enable_teams')
+
+        # Removing M2M table for field teams on 'Competition'
+        db.delete_table(db.shorten_name(u'web_competition_teams'))
 
 
     models = {
@@ -56,6 +76,7 @@ class Migration(SchemaMigration):
             'participation_status_updates': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'project_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
+            'public_profile': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'publication_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
             'team_members': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'team_name': ('django.db.models.fields.CharField', [], {'max_length': '64', 'null': 'True', 'blank': 'True'}),
@@ -68,6 +89,32 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
+        },
+        u'teams.team': {
+            'Meta': {'unique_together': "(('name', 'competition'),)", 'object_name': 'Team'},
+            'allow_requests': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'competition': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['web.Competition']"}),
+            'creator': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'team_creator'", 'to': u"orm['authenz.ClUser']"}),
+            'description': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'image': ('django.db.models.fields.files.FileField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'image_url_base': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'last_modified': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'members': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['authenz.ClUser']", 'null': 'True', 'through': u"orm['teams.TeamMembership']", 'blank': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
+        },
+        u'teams.teammembership': {
+            'Meta': {'object_name': 'TeamMembership'},
+            'end_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_accepted': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'is_invitation': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'is_request': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'message': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'start_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
+            'team': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['teams.Team']"}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['authenz.ClUser']"})
         },
         u'web.competition': {
             'Meta': {'ordering': "['end_date']", 'object_name': 'Competition'},
@@ -82,6 +129,7 @@ class Migration(SchemaMigration):
             'enable_forum': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'enable_medical_image_viewer': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'enable_per_submission_metadata': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'enable_teams': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'end_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'force_submission_to_leaderboard': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'has_registration': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
@@ -99,6 +147,7 @@ class Migration(SchemaMigration):
             'secret_key': ('django.db.models.fields.CharField', [], {'max_length': '36', 'blank': 'True'}),
             'show_datasets_from_yaml': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'start_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
+            'teams': ('django.db.models.fields.related.ManyToManyField', [], {'blank': 'True', 'related_name': "'competition_teams'", 'null': 'True', 'symmetrical': 'False', 'to': u"orm['teams.Team']"}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
         u'web.competitiondefbundle': {

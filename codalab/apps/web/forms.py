@@ -31,8 +31,9 @@ class CompetitionForm(forms.ModelForm):
             'allow_public_submissions',
             'enable_forum',
             'anonymous_leaderboard',
+            'enable_teams',
         )
-        widgets = { 'description' : TinyMCE(attrs={'rows' : 20, 'class' : 'competition-editor-description'},
+        widgets = { 'description' : TinyMCE(attrs={'class' : 'competition-editor-description'},
                                             mce_attrs={"theme" : "advanced", "cleanup_on_startup" : True, "theme_advanced_toolbar_location" : "top", "gecko_spellcheck" : True})}
     def __init__(self, *args, **kwargs):
         super(CompetitionForm, self).__init__(*args, **kwargs)
@@ -188,10 +189,17 @@ class UserSettingsForm(forms.ModelForm):
             'bibtex',
             'first_name',
             'last_name',
-            'email'
+            'email',
+            'public_profile',
+            'biography',
+            'webpage',
+            'linkedin',
+            'ORCID',
         )
         widgets = {
             'team_members': forms.Textarea(attrs={"class": "form-control"}),
             'method_description': forms.Textarea(attrs={"class": "form-control"}),
-            'bibtex': forms.Textarea(attrs={"class": "form-control"})
+            'bibtex': forms.Textarea(attrs={"class": "form-control"}),
+            'biography': TinyMCE(attrs={'rows' : 20, 'class' : 'competition-editor-description'},
+                                 mce_attrs={"theme" : "advanced", "cleanup_on_startup" : True, "theme_advanced_toolbar_location" : "top", "gecko_spellcheck" : True})
         }

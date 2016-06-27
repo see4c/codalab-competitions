@@ -46,6 +46,8 @@ from django.utils.functional import cached_property
 from apps.forums.models import Forum
 from apps.coopetitions.models import DownloadRecord
 
+from apps.teams.models import Team
+
 
 User = settings.AUTH_USER_MODEL
 logger = logging.getLogger(__name__)
@@ -184,7 +186,10 @@ class Competition(models.Model):
     enable_per_submission_metadata = models.BooleanField(default=False)
     allow_public_submissions = models.BooleanField(default=False, verbose_name="Allow sharing of public submissions")
     enable_forum = models.BooleanField(default=True)
+    enable_teams = models.BooleanField(default=True)
     anonymous_leaderboard = models.BooleanField(default=False)
+
+    teams = models.ManyToManyField(Team, related_name='competition_teams', blank=True, null=True)
 
     @property
     def pagecontent(self):

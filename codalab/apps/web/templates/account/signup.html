@@ -41,6 +41,12 @@
             {% if redirect_field_value %}
 		          <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
             {% endif %}
+
+            <div class="form-group">
+                <input type='checkbox' id="id_accept_rules" name='accept_rules' required="True">
+                <label for="id_accept_rules">I accept the <a href="https://github.com/codalab/codalab-competitions/wiki/Privacy">terms and conditions</a></label>
+            </div>
+
             <button class="btn btn-primary margin-top" type="submit">{% trans "Sign Up" %}</button>
 	    </form>
     </div>

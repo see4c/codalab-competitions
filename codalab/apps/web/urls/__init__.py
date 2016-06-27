@@ -20,6 +20,7 @@ urlpatterns = patterns('',
     url(r'^health/', include('apps.health.urls')),
     url(r'^analytics/', include('apps.analytics.urls')),
     url(r'^forums/', include('apps.forums.urls')),
+    url(r'^teams/', include('apps.teams.urls')),
     url(r'^captcha/', include('captcha.urls')),
     url(r'^coopetitions/', include('apps.coopetitions.urls', namespace="coopetitions")),
 

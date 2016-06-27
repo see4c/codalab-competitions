@@ -13,10 +13,50 @@ class Migration(SchemaMigration):
                       self.gf('django.db.models.fields.BooleanField')(default=False),
                       keep_default=False)
 
+        # Adding field 'ClUser.biography'
+        db.add_column(u'authenz_cluser', 'biography',
+                      self.gf('django.db.models.fields.TextField')(null=True, blank=True),
+                      keep_default=False)
+
+        # Adding field 'ClUser.webpage'
+        db.add_column(u'authenz_cluser', 'webpage',
+                      self.gf('django.db.models.fields.URLField')(max_length=200, null=True, blank=True),
+                      keep_default=False)
+
+        # Adding field 'ClUser.linkedin'
+        db.add_column(u'authenz_cluser', 'linkedin',
+                      self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True),
+                      keep_default=False)
+
+        # Adding field 'ClUser.ORCID'
+        db.add_column(u'authenz_cluser', 'ORCID',
+                      self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True),
+                      keep_default=False)
+
+        # Adding field 'ClUser.public_profile'
+        db.add_column(u'authenz_cluser', 'public_profile',
+                      self.gf('django.db.models.fields.BooleanField')(default=False),
+                      keep_default=False)
+
 
     def backwards(self, orm):
         # Deleting field 'ClUser.email_on_submission_finished_successfully'
         db.delete_column(u'authenz_cluser', 'email_on_submission_finished_successfully')
+
+        # Deleting field 'ClUser.biography'
+        db.delete_column(u'authenz_cluser', 'biography')
+
+        # Deleting field 'ClUser.webpage'
+        db.delete_column(u'authenz_cluser', 'webpage')
+
+        # Deleting field 'ClUser.linkedin'
+        db.delete_column(u'authenz_cluser', 'linkedin')
+
+        # Deleting field 'ClUser.ORCID'
+        db.delete_column(u'authenz_cluser', 'ORCID')
+
+        # Deleting field 'ClUser.public_profile'
+        db.delete_column(u'authenz_cluser', 'public_profile')
 
 
     models = {
@@ -35,7 +75,9 @@ class Migration(SchemaMigration):
         },
         u'authenz.cluser': {
             'Meta': {'object_name': 'ClUser'},
+            'ORCID': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'bibtex': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'biography': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'contact_email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'null': 'True', 'blank': 'True'}),
             'date_joined': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
@@ -48,6 +90,7 @@ class Migration(SchemaMigration):
             'is_superuser': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'last_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
+            'linkedin': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'method_description': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'method_name': ('django.db.models.fields.CharField', [], {'max_length': '20', 'null': 'True', 'blank': 'True'}),
             'organization_or_affiliation': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
@@ -56,11 +99,13 @@ class Migration(SchemaMigration):
             'participation_status_updates': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'project_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
+            'public_profile': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'publication_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
             'team_members': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'team_name': ('django.db.models.fields.CharField', [], {'max_length': '64', 'null': 'True', 'blank': 'True'}),
             'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
-            'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
+            'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'}),
+            'webpage': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'})
         },
         u'contenttypes.contenttype': {
             'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
