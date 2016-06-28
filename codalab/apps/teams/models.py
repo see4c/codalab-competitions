@@ -29,7 +29,7 @@ def get_competition_teams(competition):
     team_list=Team.objects.filter(
         competition=competition,
         is_active=True,
-    ).all()
+    ).all().order_by('name')
     return team_list
 
 def get_competition_user_teams(competition,user):
@@ -51,8 +51,12 @@ def get_user_requests(user, competition):
     user_requests = TeamMembership.objects.filter(
         user=user,
         team__in=team_list,
-    ).select_related('team').all()
+    ).all()
     return user_requests
+
+def get_allowed_teams(user,competition):
+    # TODO: Remove teams where user already have a request
+    return get_competition_teams(competition)
 
 def get_user_team(user, competition):
     team=get_competition_user_teams(competition, user)

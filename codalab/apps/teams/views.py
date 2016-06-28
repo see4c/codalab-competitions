@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from apps.web.models import Competition, ParticipantStatus
 from apps.web.views import LoginRequiredMixin
 
-from .models import Team, TeamMembership, get_user_requests, get_competition_teams, get_user_team
+from .models import Team, TeamMembership, get_user_requests, get_competition_teams, get_user_team, get_allowed_teams
 from apps.teams import forms
 from django.views.generic import View, TemplateView, DetailView, ListView, FormView, UpdateView, CreateView, DeleteView
 from extra_views import CreateWithInlinesView, UpdateWithInlinesView, InlineFormSet, NamedFormsetsMixin
@@ -41,6 +41,7 @@ class TeamDetailView(LoginRequiredMixin, TemplateView):
                     context['team_members']=user_team.members.all()
                 context['requests'] = user_requests
                 context['teams'] = team_list
+                context['allowed_teams'] = get_allowed_teams(participant, competition)
 
 
         return context
@@ -110,41 +111,22 @@ class NewRequestTeamView(LoginRequiredMixin, CreateView):
     template_name = "teams/request.html"
     form_class = forms.TeamMembershipForm
 
+    def get_success_url(self):
+        competition=Competition.objects.get(pk=self.kwargs['competition_pk']);
+        return reverse('team_detail', kwargs={'competition_pk': competition.pk})
     def get_context_data(self, **kwargs):
-        error = None
-        team = Team.objects.get(pk=self.kwargs['team_pk'])
-        competition = Competition.objects.get(pk=self.kwargs['competition_pk'])
-        if competition.participants.filter(user__in=[self.request.user]).exists():
-            participant = competition.participants.get(user=self.request.user)
-            if participant.status.codename == ParticipantStatus.APPROVED:
-                if team.allow_requests:
-                    if team.creator!=participant.user and team.is_active and team.is_accepted:
-                        current_requests=TeamMembership.objects.filter(
-                            team=team,
-                            user=participant.user,
-                        ).all()
-                        if len(current_requests)==0:
-                            open_requests=None
-                        else:
-                            open_requests=None
-                            for req in current_requests:
-                                if req.is_active:
-                                    open_requests=req
-                                    break
+        context = super(NewRequestTeamView, self).get_context_data(**kwargs)
+        context['competition'] = Competition.objects.get(pk=self.kwargs['competition_pk'])
+        context['team'] = Team.objects.get(pk=self.kwargs['team_pk'])
+        return context
+    def form_valid(self, form):
+        form.instance.user=self.request.user
+        form.instance.team=Team.objects.get(pk=self.kwargs['team_pk'])
+        form.instance.start_date=now()
+        form.instance.is_request=True
+        form.save()
+        return super(NewRequestTeamView, self).form_valid(form)
 
-                        if open_requests is None:
-                            TeamMembership.
-
-                    else:
-                        error = "You cannot modify this request"
-                else:
-                    error = "Invalid request: This request is not active"
-                context=super(RequestTeamView, self).get_context_data(**kwargs)
-
-                if error is not None:
-                    context['error'] = error
-
-        return context;
 
 class TeamCreateView(LoginRequiredMixin, CreateView):
     model = Team

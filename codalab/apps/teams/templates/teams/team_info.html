@@ -69,7 +69,7 @@
                         <table class="table table-striped affiliation">
                             <thead>
                                 <tr class="table-title">
-                                    <th colspan="4">Invitations</th>
+                                    <th colspan="4">Requests</th>
                                 </tr>
                                 <tr class="leaderboard-result-table-header">
                                     <th>Team</th>
@@ -81,14 +81,13 @@
                             <tbody>
                                 {% if requests %}
                                     {% for request in requests %}
-                                        {% if request.is_invitation and request.is_active %}
+                                        {% if request.is_request and request.is_active %}
                                             <tr >
                                                 <td>{{ request.team.name }}</td>
                                                 <td>{{ request.message }}</td>
                                                 <td>{{ request.start_date }}</td>
                                                 <td>
-                                                    <a href="{% url 'team_request_action' competition_pk=competition.pk request_pk=request.pk action="accept"%}" class="btn btn-default pull-left">Accept</a>
-                                                    <a href="{% url 'team_request_action' competition_pk=competition.pk request_pk=request.pk action="reject"%}" class="btn btn-default pull-left">Reject</a>
+                                                    <a href="{% url 'team_request_action' competition_pk=competition.pk request_pk=request.pk action="cancel"%}" class="btn btn-default pull-left">Cancel</a>
                                                 </td>
                                             </tr>
                                         {% endif %}
@@ -98,6 +97,31 @@
                         </table>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <table class="table table-striped affiliation">
+                            <thead>
+                                <tr class="leaderboard-result-table-header">
+                                    <th>Team</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if allowed_teams %}
+                                    {% for t in allowed_teams %}
+                                        <tr >
+                                            <td>{{ t.name }}</td>
+                                            <td>
+                                                <a href="{% url 'team_request_create' competition_pk=competition.pk team_pk=t.pk%}" class="btn btn-default pull-left">Request</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             {% else %}
                 <p><em>Enrolled to team {{ team.name }}</em></p>
                 <a href="{% url 'team_edit' competition_pk=competition.pk team_pk=team.pk%}" class="btn btn-default pull-left">Edit</a>
