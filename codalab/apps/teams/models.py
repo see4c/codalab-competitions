@@ -29,7 +29,7 @@ def get_competition_teams(competition):
     team_list=Team.objects.filter(
         competition=competition,
         is_active=True,
-    ).all().order_by('name')
+    ).all()
     return team_list
 
 def get_competition_user_teams(competition,user):
@@ -49,7 +49,7 @@ def get_competition_user_teams(competition,user):
 def get_user_requests(user, competition):
     team_list=get_competition_teams(competition)
     user_requests = TeamMembership.objects.filter(
-        user=user,
+        user=user.user,
         team__in=team_list,
     ).all()
     return user_requests
