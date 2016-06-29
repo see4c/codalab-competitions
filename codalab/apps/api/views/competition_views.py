@@ -34,6 +34,7 @@ from apps.api import serializers
 from apps.authenz.models import ClUser
 from apps.jobs.models import Job
 from apps.web import models as webmodels
+from apps.teams import models as teammodels
 from apps.web.bundles import BundleService
 from apps.web.tasks import (create_competition, evaluate_submission)
 
@@ -318,7 +319,7 @@ class CompetitionAPIViewSet(viewsets.ModelViewSet):
             p.save()
             resp = {
                 'status': status,
-                'participantId': part,
+                'teamId': part,
                 'reason': reason
                 }
 
@@ -380,6 +381,33 @@ class CompetitionAPIViewSet(viewsets.ModelViewSet):
                 'status' : 400
                 }
 
+        return Response(json.dumps(resp), content_type="application/json")
+
+    @action(methods=['POST', 'PUT'], permission_classes=[permissions.IsAuthenticated])
+    def team_status(self, request, pk=None):
+        comp = self.get_object()
+        resp = {}
+        status = request.DATA['status']
+        teamID = request.DATA['team_id']
+        reason = request.DATA['reason']
+
+        if comp.creator != request.user and request.user not in comp.admins.all():
+            raise PermissionDenied()
+
+        try:
+            team = teammodels.Team.objects.get(competition=comp, pk=teamID)
+            team.status = teammodels.TeamStatus.objects.get(codename=status)
+            team.reason = reason
+            team.save()
+            resp = {
+                'status': status,
+                'teamId': teamID,
+                'reason': reason
+                }
+        except ObjectDoesNotExist as e:
+            resp = {
+                'status' : 400
+                }
         return Response(json.dumps(resp), content_type="application/json")
 
     @action(permission_classes=[permissions.IsAuthenticated])

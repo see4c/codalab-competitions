@@ -40,6 +40,7 @@ from apps.coopetitions.models import Like, Dislike
 from apps.forums.models import Forum
 from apps.common.competition_utils import get_most_popular_competitions, get_featured_competitions
 from tasks import evaluate_submission
+from apps.teams.models import get_user_team, get_competition_teams, get_competition_pending_teams, get_competition_deleted_teams
 
 
 from extra_views import CreateWithInlinesView, UpdateWithInlinesView, InlineFormSet, NamedFormsetsMixin
@@ -737,6 +738,40 @@ class MyCompetitionParticipantView(LoginRequiredMixin, ListView):
                 'name': 'email'
             },
             {
+                'label': 'TEAM',
+                'name' : 'team_name'
+            },
+            {
+                'label': 'STATUS',
+                'name': 'status'
+            },
+            {
+                'label': 'ENTRIES',
+                'name': 'entries'
+            }
+        ]
+        team_columns = [
+            {
+                'label': '#',
+                'name': 'number'
+            },
+            {
+                'label': 'NAME',
+                'name': 'name'
+            },
+            {
+                'label': 'CREATOR',
+                'name': 'creator'
+            },
+            {
+                'label': '# MEMBERS',
+                'name': 'num_members'
+            },
+            {
+                'label': 'PENDING REQ/INV',
+                'name': 'num_pending'
+            },
+            {
                 'label': 'STATUS',
                 'name': 'status'
             },
@@ -754,6 +789,8 @@ class MyCompetitionParticipantView(LoginRequiredMixin, ListView):
             raise Http404()
 
         context['columns'] = columns
+        context['team_columns'] = team_columns
+
         # retrieve participant submissions information
         participant_list = []
         competition_participants = self.queryset.filter(competition=competition)
@@ -761,6 +798,11 @@ class MyCompetitionParticipantView(LoginRequiredMixin, ListView):
         context['pending_participants'] = filter(lambda participant_submission: participant_submission.status.codename == models.ParticipantStatus.PENDING, competition_participants)
         participant_submissions = models.CompetitionSubmission.objects.filter(participant__in=competition_participants_ids)
         for number, participant in enumerate(competition_participants):
+            team = get_user_team(participant, participant.competition)
+            if team is not None:
+                team_name=team.name
+            else:
+                team_name=''
             participant_entry = {
                 'pk': participant.pk,
                 'name': participant.user.username,
@@ -769,13 +811,36 @@ class MyCompetitionParticipantView(LoginRequiredMixin, ListView):
                 'status': participant.status.codename,
                 'number': number + 1,
                 # equivalent to assigning participant.submissions.count() but without several multiple db queires
-                'entries': len(filter(lambda participant_submission: participant_submission.participant.id == participant.id, participant_submissions))
+                'entries': len(filter(lambda participant_submission: participant_submission.participant.id == participant.id, participant_submissions)),
+                'team_name': team_name,
+                'team': team
             }
             participant_list.append(participant_entry)
         # order results
         sort_data_table(self.request, context, participant_list)
         context['participant_list'] = participant_list
         context['competition_id'] = self.kwargs.get('competition_id')
+        competition = models.Competition.objects.get(pk=self.kwargs.get('competition_id'))
+
+        if competition.enable_teams:
+            context['teams_enabled'] = True;
+            teams_list=[]
+            for number, team in enumerate(get_competition_teams(competition)):
+                team_entry = {
+                    'pk': team.pk,
+                    'name': team.name,
+                    'creator': team.creator.username,
+                    'creator_pk': team.creator.pk,
+                    'num_members': 0,
+                    'num_pending': 0,
+                    'status': team.status.codename,
+                    'number': number + 1,
+                    # equivalent to assigning participant.submissions.count() but without several multiple db queires
+                    'entries': 0,
+                }
+                teams_list.append(team_entry)
+            context['team_list'] = teams_list
+        context['pending_teams'] = get_competition_pending_teams(competition)
         return context
 
     def get_queryset(self):

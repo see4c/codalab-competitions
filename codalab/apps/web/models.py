@@ -46,7 +46,7 @@ from django.utils.functional import cached_property
 from apps.forums.models import Forum
 from apps.coopetitions.models import DownloadRecord
 
-from apps.teams.models import Team
+from apps.teams.models import Team, get_user_team
 
 
 User = settings.AUTH_USER_MODEL
@@ -1058,6 +1058,8 @@ class CompetitionSubmission(models.Model):
 
     is_migrated = models.BooleanField(default=False) # Will be used to auto  migrate
 
+    team = models.ForeignKey(Team, related_name='team', null=True, blank=True)
+
     class Meta:
         unique_together = (('submission_number','phase','participant'),)
 
@@ -1153,6 +1155,10 @@ class CompetitionSubmission(models.Model):
 
         print "Setting the file url base."
         self.file_url_base = self.file.storage.url('')
+
+        # Add current participant team if the competition allow teams
+        if self.participant.competition.enable_teams:
+            user_team=get_user_team(self.participant, self.participant.competition)
 
         print "Calling super save."
         # TODO REMOVE AFTER TESTING

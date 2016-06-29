@@ -28,14 +28,30 @@ except:
 def get_competition_teams(competition):
     team_list=Team.objects.filter(
         competition=competition,
-        is_active=True,
+        status=TeamStatus.objects.get(codename="approved"),
     ).all()
+    return team_list
+
+def get_competition_pending_teams(competition):
+    team_list=Team.objects.filter(
+        competition=competition,
+        status=TeamStatus.objects.get(codename="pending"),
+    ).select_related("status").all()
+
+    return team_list
+
+def get_competition_deleted_teams(competition):
+    team_list=Team.objects.filter(
+        competition=competition,
+        status=TeamStatus.objects.get(codename="deleted"),
+    ).all()
+
     return team_list
 
 def get_competition_user_teams(competition,user):
     team_list=Team.objects.filter(
         competition=competition,
-        is_active=True,
+        status=TeamStatus.objects.get(codename="approved"),
         creator=user.user,
     ).all()
     if len(team_list)==0:
@@ -64,9 +80,8 @@ def get_user_team(user, competition):
     if team is not None:
         return team
 
-    team_list=get_competition_teams(competition)
     user_requests = get_user_requests(user, competition)
-    user_team=user_requests.filter(is_accepted=True).all()
+    user_team=user_requests.filter(status=TeamMembershipStatus.objects.get(codename="approved")).all()
     if len(user_team)==0:
         user_team=None
 
@@ -80,14 +95,28 @@ def get_user_team(user, competition):
 
     return team
 
+
 # Create your models here.
+class TeamStatus(models.Model):
+    UNKNOWN = 'unknown'
+    DENIED = 'denied'
+    APPROVED = 'approved'
+    PENDING = 'pending'
+    DELETED = 'deleted'
+    name = models.CharField(max_length=30)
+    codename = models.CharField(max_length=30,unique=True)
+    description = models.CharField(max_length=50)
+
+    def __unicode__(self):
+        return self.name
+
 class Team(models.Model):
     """ This is the base team. """
     class Meta:
         unique_together = (('name', 'competition'),)
 
     def __unicode__(self):
-        return "%s - %s" % (self.competition.title, self.name)
+        return "[%s] %s - %s" % (self.status.codename, self.competition.title, self.name)
 
     name = models.CharField(max_length=100)
     competition = models.ForeignKey('web.Competition')
@@ -98,8 +127,8 @@ class Team(models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='team_creator')
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, through='TeamMembership', blank=True, null=True)
     last_modified = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=True, verbose_name="Is Active")
-    is_accepted = models.BooleanField(default=False, verbose_name="Is Accepted")
+    status = models.ForeignKey(TeamStatus, null=True)
+    reason = models.CharField(max_length=100,null=True,blank=True)
 
     def save(self, *args, **kwargs):
         # Make sure the image_url_base is set from the actual storage implementation
@@ -110,6 +139,19 @@ class Team(models.Model):
         # Do the real save
         return super(Team,self).save(*args,**kwargs)
 
+
+class TeamMembershipStatus(models.Model):
+    UNKNOWN = 'unknown'
+    REJECTED = 'rejected'
+    APPROVED = 'approved'
+    PENDING = 'pending'
+    CANCELED = 'canceled'
+    name = models.CharField(max_length=30)
+    codename = models.CharField(max_length=30,unique=True)
+    description = models.CharField(max_length=50)
+
+    def __unicode__(self):
+        return self.name
 
 class TeamMembership(models.Model):
     def __unicode__(self):
@@ -128,8 +170,8 @@ class TeamMembership(models.Model):
     team = models.ForeignKey(Team)
     is_invitation = models.BooleanField(default=False)
     is_request = models.BooleanField(default=False)
-    is_accepted = models.BooleanField(default=False)
     start_date = models.DateTimeField(null=True, blank=True, verbose_name="Start Date (UTC)")
     end_date = models.DateTimeField(null=True, blank=True, verbose_name="End Date (UTC)")
     message = models.TextField(null=True, blank=True)
-
+    status = models.ForeignKey(TeamMembershipStatus, null=True)
+    reason = models.CharField(max_length=100,null=True,blank=True)
