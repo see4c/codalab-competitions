@@ -4,6 +4,11 @@
 {% block head_title %}Competition{% endblock %}
 {% block page_title %}Competition{% endblock page_title %}
 
+{% block extra_headers %}
+{# include extra JS stuff here #}
+    {{ form.media }}
+{% endblock extra_headers %}
+
 {% block content %}
 
 <div class="competition-view">
