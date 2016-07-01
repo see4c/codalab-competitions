@@ -30,7 +30,7 @@ class ClUser(auth_models.AbstractUser):
 
     # Profile details
     image = models.FileField(upload_to='user_photo', storage=PublicStorage, null=True, blank=True, verbose_name="Logo")
-    image_url_base = models.CharField(max_length=255)
+    image_url_base = models.CharField(max_length=255, null=True, blank=True)
     organization_or_affiliation = models.CharField(max_length=255, null=True, blank=True)
     biography = models.TextField(null=True, blank=True)
     webpage = models.URLField(null=True, blank=True)
