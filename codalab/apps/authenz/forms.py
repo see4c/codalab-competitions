@@ -10,7 +10,7 @@ class CodalabSignupForm(forms.Form):
     publication_url = forms.URLField(required=False)
     organization_or_affiliation = forms.CharField(max_length=255, required=False)
     bibtex = forms.CharField(required=False)
-    biography = forms.Textarea()
+    biography = forms.CharField(required=False)
     webpage = forms.CharField(max_length=255, required=False)
     ORCID = forms.CharField(max_length=255, required=False)
 
