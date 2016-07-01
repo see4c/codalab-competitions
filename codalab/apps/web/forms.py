@@ -32,6 +32,7 @@ class CompetitionForm(forms.ModelForm):
             'enable_forum',
             'anonymous_leaderboard',
             'enable_teams',
+            'require_team_approval'
         )
         widgets = { 'description' : TinyMCE(attrs={'class' : 'competition-editor-description'},
                                             mce_attrs={"theme" : "advanced", "cleanup_on_startup" : True, "theme_advanced_toolbar_location" : "top", "gecko_spellcheck" : True})}

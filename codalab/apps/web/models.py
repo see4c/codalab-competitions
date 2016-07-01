@@ -187,6 +187,7 @@ class Competition(models.Model):
     allow_public_submissions = models.BooleanField(default=False, verbose_name="Allow sharing of public submissions")
     enable_forum = models.BooleanField(default=True)
     enable_teams = models.BooleanField(default=True)
+    require_team_approval = models.BooleanField(default=True)
     anonymous_leaderboard = models.BooleanField(default=False)
 
     teams = models.ManyToManyField(Team, related_name='competition_teams', blank=True, null=True)
@@ -821,14 +822,14 @@ class CompetitionPhase(models.Model):
                 )
                 for submission in qs:
                     result_location.append(submission.file.name)
-                    submissions.append((submission.pk, submission.participant.user))
+                    submissions.append((submission.pk, submission.participant.user, submission.team))
             else:
                 qs = PhaseLeaderBoardEntry.objects.filter(board=lb)
                 for entry in qs:
                     result_location.append(entry.result.file.name)
 
                 for entry in qs:
-                    submissions.append((entry.result.id, entry.result.participant.user))
+                    submissions.append((entry.result.id, entry.result.participant.user, entry.result.team))
 
         results = []
         for count, g in enumerate(SubmissionResultGroup.objects.filter(phases__in=[self]).order_by('ordering')):
@@ -837,11 +838,17 @@ class CompetitionPhase(models.Model):
             scores = {}
 
             # add the location of the results on the blob storage to the scores
-            for (pk, user) in submissions:
+            for (pk, user, team) in submissions:
+                if self.competition.enable_teams:
+                    team_name=''
+                    if team is not None:
+                        team_name=team.name
+                else:
+                    team_name=user.team_name
                 scores[pk] = {
                     'username': user.username,
                     'user_pk': user.pk,
-                    'team_name': user.team_name,
+                    'team_name': team_name,
                     'id': pk,
                     'values': [],
                     'resultLocation': result_location[count]
@@ -1156,9 +1163,10 @@ class CompetitionSubmission(models.Model):
         print "Setting the file url base."
         self.file_url_base = self.file.storage.url('')
 
-        # Add current participant team if the competition allow teams
+        # Add current participant team if the competition hallow teams
         if self.participant.competition.enable_teams:
-            user_team=get_user_team(self.participant, self.participant.competition)
+            self.team=get_user_team(self.participant, self.participant.competition)
+
 
         print "Calling super save."
         # TODO REMOVE AFTER TESTING

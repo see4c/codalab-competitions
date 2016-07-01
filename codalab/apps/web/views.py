@@ -40,7 +40,7 @@ from apps.coopetitions.models import Like, Dislike
 from apps.forums.models import Forum
 from apps.common.competition_utils import get_most_popular_competitions, get_featured_competitions
 from tasks import evaluate_submission
-from apps.teams.models import get_user_team, get_competition_teams, get_competition_pending_teams, get_competition_deleted_teams
+from apps.teams.models import TeamMembership, get_user_team, get_competition_teams, get_competition_pending_teams, get_competition_deleted_teams
 
 
 from extra_views import CreateWithInlinesView, UpdateWithInlinesView, InlineFormSet, NamedFormsetsMixin
@@ -824,6 +824,7 @@ class MyCompetitionParticipantView(LoginRequiredMixin, ListView):
 
         if competition.enable_teams:
             context['teams_enabled'] = True;
+            participant_memberships = TeamMembership.objects.filter(user__in=competition_participants_ids)
             teams_list=[]
             for number, team in enumerate(get_competition_teams(competition)):
                 team_entry = {
@@ -836,7 +837,7 @@ class MyCompetitionParticipantView(LoginRequiredMixin, ListView):
                     'status': team.status.codename,
                     'number': number + 1,
                     # equivalent to assigning participant.submissions.count() but without several multiple db queires
-                    'entries': 0,
+                    'entries': len(filter(lambda participant_submission: get_user_team(participant_submission.participant) == team, participant_submissions)),
                 }
                 teams_list.append(team_entry)
             context['team_list'] = teams_list
@@ -1391,10 +1392,22 @@ def download_leaderboard_results(request, competition_pk, phase_pk):
             zip_file.writestr(output_file_name, submission.output_file.read())
 
             profile_data_file_name = "%s - %s profile.txt" % (username_or_team_name, submission.submission_number)
+
+            team_name=submission.participant.user.team_name
+            team_members=submission.participant.user.team_members
+
+            if submission.team is not None:
+                team_name=submission.team.name
+                team_members=''
+                for member in submission.team.get_members("approved"):
+                    if len(team_members)>0:
+                        team_members += "\0"
+                    team_members += member.user.username + "<" + member.user.email + ">"
+
             user_profile_data = {
                 'Organization': submission.participant.user.organization_or_affiliation,
-                'Team Name': submission.participant.user.team_name,
-                'Team Members': submission.participant.user.team_members,
+                'Team Name': team_name,
+                'Team Members': team_members,
                 'Method Name': submission.participant.user.method_name,
                 'Method Description': submission.participant.user.method_description,
                 'Contact Email': submission.participant.user.contact_email,

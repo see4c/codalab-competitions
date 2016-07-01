@@ -1,10 +1,13 @@
 import logging
+import os
 from django.conf import settings
 from django.core.files.storage import get_storage_class
 from django.db import models
 from django.utils.timezone import now
 from django.utils.functional import cached_property
+from django import template
 
+register = template.Library()
 User = settings.AUTH_USER_MODEL
 logger = logging.getLogger(__name__)
 
@@ -40,6 +43,14 @@ def get_competition_pending_teams(competition):
 
     return team_list
 
+def get_team_pending_membership(team):
+    requests = TeamMembership.objects.filter(
+        team=team,
+        is_request=True,
+        status=TeamMembershipStatus.objects.get(codename="pending"),
+    ).select_related("user").all()
+    return requests
+
 def get_competition_deleted_teams(competition):
     team_list=Team.objects.filter(
         competition=competition,
@@ -59,8 +70,6 @@ def get_competition_user_teams(competition,user):
     else:
         team_list=team_list[0]
     return team_list
-
-
 
 def get_user_requests(user, competition):
     team_list=get_competition_teams(competition)
@@ -121,24 +130,73 @@ class Team(models.Model):
     name = models.CharField(max_length=100)
     competition = models.ForeignKey('web.Competition')
     description = models.TextField(null=True, blank=True)
-    image = models.ImageField(upload_to='team_logo', storage=PublicStorage, null=True, blank=True, verbose_name="Logo")
+    image = models.FileField(upload_to='team_logo', storage=PublicStorage, null=True, blank=True, verbose_name="Logo")
     image_url_base = models.CharField(max_length=255)
     allow_requests = models.BooleanField(default=True, verbose_name="Allow requests")
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='team_creator')
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, through='TeamMembership', blank=True, null=True)
+    created_at = models.DateTimeField(null=True, auto_now_add=True)
     last_modified = models.DateTimeField(auto_now_add=True)
     status = models.ForeignKey(TeamStatus, null=True)
     reason = models.CharField(max_length=100,null=True,blank=True)
 
     def save(self, *args, **kwargs):
         # Make sure the image_url_base is set from the actual storage implementation
-        #self.image_url_base = self.image.storage.url('')
+        self.image_url_base = self.image.storage.url('')
         self.last_modified=now()
 
+        if self.status is None:
+            self.status = TeamStatus.objects.get(codename=TeamStatus.PENDING)
 
         # Do the real save
         return super(Team,self).save(*args,**kwargs)
 
+    @cached_property
+    def image_url(self):
+        # Return the transformed image_url
+        if self.image:
+            return os.path.join(self.image_url_base, self.image.name)
+        return None
+
+    @cached_property
+    def active_members(self):
+        return self.get_members("approved")
+
+    @cached_property
+    def active_requests(self):
+        return self.get_members("pending")
+
+    @property
+    def has_applied(self, user):
+        for member in self.get_members("pending"):
+            if member.user == user:
+                return True
+        return False
+
+    @property
+    def is_member(self, user):
+        for member in self.get_members("approved"):
+            if member.user == user:
+                return True
+        return False
+
+    @property
+    def is_admin(self, user):
+        return self.creator==user
+
+    def get_members(self, status):
+        requests = TeamMembership.objects.filter(
+            team=self,
+            is_request=True,
+            status=TeamMembershipStatus.objects.get(codename=status),
+        ).select_related("user").all()
+
+        members=[]
+        for member in requests:
+            if member.is_active:
+                members.append(member)
+
+        return members
 
 class TeamMembershipStatus(models.Model):
     UNKNOWN = 'unknown'

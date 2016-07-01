@@ -9,7 +9,9 @@ class TeamEditForm(forms.ModelForm):
     name = forms.CharField(max_length=64, required=False)
     description = forms.Textarea()
     allow_requests = forms.BooleanField(required=False)
-    image = avatar_forms.AvatarField()
+    image = forms.ImageField(required=False)
+
+    #image = avatar_forms.AvatarField()
 
     class Meta:
         model = Team
@@ -17,7 +19,7 @@ class TeamEditForm(forms.ModelForm):
             'name',
             'description',
             'allow_requests',
-            'status',
+            'image'
         )
         widgets = {
             'description' : TinyMCE(attrs={'class' : 'team-editor-description'},

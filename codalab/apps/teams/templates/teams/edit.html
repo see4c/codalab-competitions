@@ -23,7 +23,7 @@
             </div>
         </div>
     </div>
-<form method="POST" action="">{% csrf_token %}
+<form action="" data-abide enctype="multipart/form-data" method="POST">{% csrf_token %}
     {% if errors %}
         <div class="alert alert-error">
             There were errors processing the form, please try reloading the page!
@@ -52,10 +52,10 @@
                         <th>{{ form.name.label }}</th>
                         <td>{{ form.name }}</td>
                     </tr>
-                    <!--<tr>
+                    <tr>
                         <th>{{ form.image.label }}</th>
                         <td>{{ form.image }}</td>
-                    </tr>-->
+                    </tr>
                     <tr>
                         <th>{{ form.description.label }}</th>
                         <td>{{ form.description }}</td>

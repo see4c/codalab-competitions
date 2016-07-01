@@ -338,7 +338,8 @@ def get_run_func(config):
                 timed_out = False
 
                 if 'Darwin' not in platform.platform():
-                    prog_cmd = prog_cmd.replace("python", join(run_dir, "/home/azureuser/anaconda/bin/python"))
+                    #prog_cmd = prog_cmd.replace("python", join(run_dir, "/home/azureuser/anaconda/bin/python"))
+                    prog_cmd = prog_cmd.replace("python", join(run_dir, "/srv/codalab/codalab-competitions/venv/bin/python"))
                     # Run as separate user
                     evaluator_process = Popen(
                         prog_cmd.split(' '),

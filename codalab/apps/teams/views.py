@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from apps.web.models import Competition, ParticipantStatus
 from apps.web.views import LoginRequiredMixin
 
-from .models import Team, TeamMembership, get_user_requests, get_competition_teams, get_user_team, get_allowed_teams
+from .models import Team, TeamStatus, TeamMembership, TeamMembershipStatus, get_user_requests, get_competition_teams, get_user_team, get_allowed_teams, get_team_pending_membership
 from apps.teams import forms
 from django.views.generic import View, TemplateView, DetailView, ListView, FormView, UpdateView, CreateView, DeleteView
 from extra_views import CreateWithInlinesView, UpdateWithInlinesView, InlineFormSet, NamedFormsetsMixin
@@ -19,7 +19,6 @@ from django.http import StreamingHttpResponse
 
 User = get_user_model()
 
-
 class TeamDetailView(LoginRequiredMixin, TemplateView):
     # Serves the table of submissions in the Participate tab of a competition.
     # Requires an authenticated user who is an approved participant of the competition.
@@ -30,6 +29,34 @@ class TeamDetailView(LoginRequiredMixin, TemplateView):
         context['team'] = None
         competition = Competition.objects.get(pk=self.kwargs['competition_pk'])
         context['competition'] = competition
+
+        members_columns = [
+            {
+                'label': '#',
+                'name': 'number'
+            },
+            {
+                'label': 'NAME',
+                'name': 'name'
+            },
+            {
+                'label': 'EMAIL',
+                'name': 'email'
+            },
+            {
+                'label': 'JOINED',
+                'name' : 'joined'
+            },
+            {
+                'label': 'STATUS',
+                'name': 'status'
+            },
+            {
+                'label': 'ENTRIES',
+                'name': 'entries'
+            }
+        ]
+
         if competition.participants.filter(user__in=[self.request.user]).exists():
             participant = competition.participants.get(user=self.request.user)
             if participant.status.codename == ParticipantStatus.APPROVED:
@@ -38,7 +65,23 @@ class TeamDetailView(LoginRequiredMixin, TemplateView):
                 user_team=get_user_team(participant, competition)
                 if user_team is not None:
                     context['team'] = user_team
-                    context['team_members']=user_team.members.all()
+                    context['team_requests'] = get_team_pending_membership(user_team)
+                    member_list=[]
+                    for number, member in enumerate(user_team.members.all()):
+                        membership = member.teammembership_set.get(team=user_team)
+                        user_entry = {
+                            'pk': member.pk,
+                            'name': member.username,
+                            'email': member.email,
+                            'joined': membership.start_date,
+                            'status': membership.status.codename,
+                            'number': number + 1,
+                            'entries': 0,
+                        }
+                        if user_entry['status'] == TeamMembershipStatus.APPROVED:
+                            member_list.append(user_entry)
+                    context['team_members']=member_list
+                    context['members_columns'] = members_columns
                 context['requests'] = user_requests
                 context['teams'] = team_list
                 context['allowed_teams'] = get_allowed_teams(participant, competition)
@@ -127,7 +170,6 @@ class NewRequestTeamView(LoginRequiredMixin, CreateView):
         form.save()
         return super(NewRequestTeamView, self).form_valid(form)
 
-
 class TeamCreateView(LoginRequiredMixin, CreateView):
     model = Team
     template_name = "teams/edit.html"
@@ -141,7 +183,12 @@ class TeamCreateView(LoginRequiredMixin, CreateView):
         return context
     def form_valid(self, form):
         form.instance.creator=self.request.user
+        form.instance.created_at=now()
         form.instance.competition=Competition.objects.get(pk=self.kwargs['competition_pk'])
+        if form.instance.competition.require_team_approval:
+            form.instance.status = TeamStatus.objects.get(codename=TeamStatus.PENDING)
+        else:
+            form.instance.status = TeamStatus.objects.get(codename=TeamStatus.APPROVED)
         #form.instance.image = form.cleaned_data['image']
         #form.image.save("revsys-logo.png", django_file, save=True)
         form.save()
