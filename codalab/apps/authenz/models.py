@@ -50,6 +50,10 @@ class ClUser(auth_models.AbstractUser):
 
     public_profile = models.BooleanField(default=False)
 
+    def update_filename(instance, filename):
+        path = "user_photo"
+        format = instance.username + instance.file_extension
+        return os.path.join(path, format)
     def save(self, *args, **kwargs):
         # Make sure the image_url_base is set from the actual storage implementation
         self.image_url_base = self.image.storage.url('')

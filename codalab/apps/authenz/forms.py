@@ -1,5 +1,5 @@
 from django import forms
-
+import os
 
 class CodalabSignupForm(forms.Form):
     image = forms.ImageField(required=False)
@@ -40,3 +40,9 @@ class CodalabSignupForm(forms.Form):
         })
         new_user.save()
 
+    def clean_image(self):
+        if 'image' in self.changed_data:
+            file,ext = os.path.splitext(self.files['image'].name)
+            self.files['image'].name = '{0}{1}'.format(self.instance.username , ext)
+
+        return self.cleaned_data["image"]

@@ -3,6 +3,7 @@ from django import forms
 from .models import Team, TeamMembership
 from tinymce.widgets import TinyMCE
 from awesome_avatar import forms as avatar_forms
+import os
 
 
 class TeamEditForm(forms.ModelForm):
@@ -31,6 +32,13 @@ class TeamEditForm(forms.ModelForm):
                 raise forms.ValidationError("This name is already used by another team", code="duplicated_name")
 
         return self.cleaned_data["name"]
+
+    def clean_image(self):
+        if 'image' in self.changed_data:
+            file,ext = os.path.splitext(self.files['image'].name)
+            self.files['image'].name = '{0}{1}'.format(self.instance.competition_id , ext)
+
+        return self.cleaned_data["image"]
 
 class TeamMembershipForm(forms.ModelForm):
     message = forms.Textarea()

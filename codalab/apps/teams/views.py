@@ -191,6 +191,11 @@ class TeamCreateView(LoginRequiredMixin, CreateView):
             form.instance.status = TeamStatus.objects.get(codename=TeamStatus.APPROVED)
         #form.instance.image = form.cleaned_data['image']
         #form.image.save("revsys-logo.png", django_file, save=True)
+
+        if form.instance.image:
+            a=form.instance.image
+
+
         form.save()
         return super(TeamCreateView, self).form_valid(form)
 
@@ -213,3 +218,11 @@ class TeamEditView(LoginRequiredMixin, UpdateView):
         }
 
         return context
+
+    def form_valid(self, form):
+
+        if form.instance.image:
+            a=form.instance.image
+
+        form.save()
+        return super(TeamEditView, self).form_valid(form)

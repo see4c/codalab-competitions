@@ -99,7 +99,11 @@
                         {% if user.is_authenticated %}
                             <li class="dropdown {% active request '/accounts/' %}">
                                 <a href="{% url 'user_settings' %}">
-                                    <img src="{{ STATIC_URL }}img/icon_mini_avatar.png" class="mini-avatar" alt="{{user.username}}"> {{user.username}} <span class="caret"></span>
+                                    {% if user.image %}
+                                        <img src="{{user.image_url}}" class="mini-avatar" alt="{{user.username}}"> {{user.username}} <span class="caret"></span>
+                                    {% else %}
+                                        <img src="{{ STATIC_URL }}img/icon_mini_avatar.png" class="mini-avatar" alt="{{user.username}}"> {{user.username}} <span class="caret"></span>
+                                    {% endif %}
                                 </a>
                                 <ul class="dropdown-menu" role="menu">
                                     <li><a href="{% url 'user_settings' %}">Settings</a></li>

@@ -205,3 +205,10 @@ class UserSettingsForm(forms.ModelForm):
             'biography': TinyMCE(attrs={'rows' : 20, 'class' : 'competition-editor-description'},
                                  mce_attrs={"theme" : "advanced", "cleanup_on_startup" : True, "theme_advanced_toolbar_location" : "top", "gecko_spellcheck" : True})
         }
+
+    def clean_image(self):
+        if 'image' in self.changed_data:
+            file,ext = os.path.splitext(self.files['image'].name)
+            self.files['image'].name = '{0}{1}'.format(self.instance.username , ext)
+
+        return self.cleaned_data["image"]
