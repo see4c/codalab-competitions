@@ -196,6 +196,7 @@ class UserSettingsForm(forms.ModelForm):
             'webpage',
             'linkedin',
             'ORCID',
+            'image',
         )
         widgets = {
             'team_members': forms.Textarea(attrs={"class": "form-control"}),

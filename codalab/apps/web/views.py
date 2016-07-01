@@ -340,6 +340,7 @@ class UserDetailView(DetailView):
             'Web Page': self.object.webpage,
             'ORCID': self.object.ORCID,
             'Linkedin': self.object.linkedin,
+            'Image': self.object.image,
         }
         return context_data
 

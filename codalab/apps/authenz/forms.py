@@ -2,6 +2,7 @@ from django import forms
 
 
 class CodalabSignupForm(forms.Form):
+    image = forms.ImageField(required=False)
     team_name = forms.CharField(max_length=64, required=False)
     contact_email = forms.EmailField(required=False)
     method_name = forms.CharField(max_length=20, required=False)
@@ -35,6 +36,7 @@ class CodalabSignupForm(forms.Form):
             'biography': self.cleaned_data['biography'],
             'webpage': self.cleaned_data['webpage'],
             'ORCID': self.cleaned_data['ORCID'],
+            'image': self.cleaned_data['image'],
         })
         new_user.save()
 

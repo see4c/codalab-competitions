@@ -15,7 +15,7 @@
 {% endblock extra_scripts %}
 
 {% block content %}
-<form method="POST" action=".">{% csrf_token %}
+<form data-abide enctype="multipart/form-data" method="POST" action=".">{% csrf_token %}
     <h2>{{ user.username }}</h2>
     {% if errors %}
         <div class="alert alert-error">
@@ -58,6 +58,10 @@
                     <tr>
                         <th>Date joined</th>
                         <td>{{ user.date_joined }}</td>
+                    </tr>
+                    <tr>
+                        <th>Image</th>
+                        <td>{{ form.image }}</td>
                     </tr>
                 </tbody>
             </table>
