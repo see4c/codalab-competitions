@@ -838,7 +838,7 @@ class MyCompetitionParticipantView(LoginRequiredMixin, ListView):
                     'status': team.status.codename,
                     'number': number + 1,
                     # equivalent to assigning participant.submissions.count() but without several multiple db queires
-                    'entries': len(filter(lambda participant_submission: get_user_team(participant_submission.participant) == team, participant_submissions)),
+                    'entries': len(filter(lambda participant_submission: get_user_team(participant_submission.participant, competition) == team, participant_submissions)),
                 }
                 teams_list.append(team_entry)
             context['team_list'] = teams_list
