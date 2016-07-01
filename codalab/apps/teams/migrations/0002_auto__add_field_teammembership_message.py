@@ -8,29 +8,95 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding field 'Team.is_accepted'
-        db.add_column(u'teams_team', 'is_accepted',
-                      self.gf('django.db.models.fields.BooleanField')(default=False),
+        # Adding model 'TeamStatus'
+        db.create_table(u'teams_teamstatus', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=30)),
+            ('codename', self.gf('django.db.models.fields.CharField')(unique=True, max_length=30)),
+            ('description', self.gf('django.db.models.fields.CharField')(max_length=50)),
+        ))
+        db.send_create_signal(u'teams', ['TeamStatus'])
+
+        # Adding model 'TeamMembershipStatus'
+        db.create_table(u'teams_teammembershipstatus', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=30)),
+            ('codename', self.gf('django.db.models.fields.CharField')(unique=True, max_length=30)),
+            ('description', self.gf('django.db.models.fields.CharField')(max_length=50)),
+        ))
+        db.send_create_signal(u'teams', ['TeamMembershipStatus'])
+
+        # Deleting field 'Team.is_active'
+        db.delete_column(u'teams_team', 'is_active')
+
+        # Adding field 'Team.created_at'
+        db.add_column(u'teams_team', 'created_at',
+                      self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, null=True, blank=True),
                       keep_default=False)
 
+        # Adding field 'Team.status'
+        db.add_column(u'teams_team', 'status',
+                      self.gf('django.db.models.fields.related.ForeignKey')(to=orm['teams.TeamStatus'], null=True),
+                      keep_default=False)
 
-        # Changing field 'Team.image'
-        db.alter_column(u'teams_team', 'image', self.gf('django.db.models.fields.files.ImageField')(max_length=100, null=True))
+        # Adding field 'Team.reason'
+        db.add_column(u'teams_team', 'reason',
+                      self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True),
+                      keep_default=False)
+
+        # Deleting field 'TeamMembership.is_accepted'
+        db.delete_column(u'teams_teammembership', 'is_accepted')
+
         # Adding field 'TeamMembership.message'
         db.add_column(u'teams_teammembership', 'message',
                       self.gf('django.db.models.fields.TextField')(null=True, blank=True),
                       keep_default=False)
 
+        # Adding field 'TeamMembership.status'
+        db.add_column(u'teams_teammembership', 'status',
+                      self.gf('django.db.models.fields.related.ForeignKey')(to=orm['teams.TeamMembershipStatus'], null=True),
+                      keep_default=False)
+
+        # Adding field 'TeamMembership.reason'
+        db.add_column(u'teams_teammembership', 'reason',
+                      self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True),
+                      keep_default=False)
+
 
     def backwards(self, orm):
-        # Deleting field 'Team.is_accepted'
-        db.delete_column(u'teams_team', 'is_accepted')
+        # Deleting model 'TeamStatus'
+        db.delete_table(u'teams_teamstatus')
 
+        # Deleting model 'TeamMembershipStatus'
+        db.delete_table(u'teams_teammembershipstatus')
 
-        # Changing field 'Team.image'
-        db.alter_column(u'teams_team', 'image', self.gf('django.db.models.fields.files.FileField')(max_length=100, null=True))
+        # Adding field 'Team.is_active'
+        db.add_column(u'teams_team', 'is_active',
+                      self.gf('django.db.models.fields.BooleanField')(default=True),
+                      keep_default=False)
+
+        # Deleting field 'Team.created_at'
+        db.delete_column(u'teams_team', 'created_at')
+
+        # Deleting field 'Team.status'
+        db.delete_column(u'teams_team', 'status_id')
+
+        # Deleting field 'Team.reason'
+        db.delete_column(u'teams_team', 'reason')
+
+        # Adding field 'TeamMembership.is_accepted'
+        db.add_column(u'teams_teammembership', 'is_accepted',
+                      self.gf('django.db.models.fields.BooleanField')(default=False),
+                      keep_default=False)
+
         # Deleting field 'TeamMembership.message'
         db.delete_column(u'teams_teammembership', 'message')
+
+        # Deleting field 'TeamMembership.status'
+        db.delete_column(u'teams_teammembership', 'status_id')
+
+        # Deleting field 'TeamMembership.reason'
+        db.delete_column(u'teams_teammembership', 'reason')
 
 
     models = {
@@ -92,28 +158,44 @@ class Migration(SchemaMigration):
             'Meta': {'unique_together': "(('name', 'competition'),)", 'object_name': 'Team'},
             'allow_requests': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'competition': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['web.Competition']"}),
+            'created_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'blank': 'True'}),
             'creator': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'team_creator'", 'to': u"orm['authenz.ClUser']"}),
             'description': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'image': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'image': ('django.db.models.fields.files.FileField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'image_url_base': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'is_accepted': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'last_modified': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'members': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['authenz.ClUser']", 'null': 'True', 'through': u"orm['teams.TeamMembership']", 'blank': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'reason': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'status': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['teams.TeamStatus']", 'null': 'True'})
         },
         u'teams.teammembership': {
             'Meta': {'object_name': 'TeamMembership'},
             'end_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_accepted': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'is_invitation': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'is_request': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'message': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'reason': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'start_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
+            'status': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['teams.TeamMembershipStatus']", 'null': 'True'}),
             'team': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['teams.Team']"}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['authenz.ClUser']"})
+        },
+        u'teams.teammembershipstatus': {
+            'Meta': {'object_name': 'TeamMembershipStatus'},
+            'codename': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'}),
+            'description': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '30'})
+        },
+        u'teams.teamstatus': {
+            'Meta': {'object_name': 'TeamStatus'},
+            'codename': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'}),
+            'description': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '30'})
         },
         u'web.competition': {
             'Meta': {'ordering': "['end_date']", 'object_name': 'Competition'},
@@ -142,6 +224,7 @@ class Migration(SchemaMigration):
             'modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'competitioninfo_modified_by'", 'to': u"orm['authenz.ClUser']"}),
             'original_yaml_file': ('django.db.models.fields.TextField', [], {'default': "''", 'null': 'True', 'blank': 'True'}),
             'published': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'require_team_approval': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'reward': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
             'secret_key': ('django.db.models.fields.CharField', [], {'max_length': '36', 'blank': 'True'}),
             'show_datasets_from_yaml': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),

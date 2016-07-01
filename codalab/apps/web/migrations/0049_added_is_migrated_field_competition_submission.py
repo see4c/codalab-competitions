@@ -13,8 +13,18 @@ class Migration(SchemaMigration):
                       self.gf('django.db.models.fields.BooleanField')(default=False),
                       keep_default=False)
 
+        # Adding field 'CompetitionSubmission.team'
+        db.add_column(u'web_competitionsubmission', 'team',
+                      self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='team', null=True, to=orm['teams.Team']),
+                      keep_default=False)
+
         # Adding field 'Competition.enable_teams'
         db.add_column(u'web_competition', 'enable_teams',
+                      self.gf('django.db.models.fields.BooleanField')(default=True),
+                      keep_default=False)
+
+        # Adding field 'Competition.require_team_approval'
+        db.add_column(u'web_competition', 'require_team_approval',
                       self.gf('django.db.models.fields.BooleanField')(default=True),
                       keep_default=False)
 
@@ -32,8 +42,14 @@ class Migration(SchemaMigration):
         # Deleting field 'CompetitionSubmission.is_migrated'
         db.delete_column(u'web_competitionsubmission', 'is_migrated')
 
+        # Deleting field 'CompetitionSubmission.team'
+        db.delete_column(u'web_competitionsubmission', 'team_id')
+
         # Deleting field 'Competition.enable_teams'
         db.delete_column(u'web_competition', 'enable_teams')
+
+        # Deleting field 'Competition.require_team_approval'
+        db.delete_column(u'web_competition', 'require_team_approval')
 
         # Removing M2M table for field teams on 'Competition'
         db.delete_table(db.shorten_name(u'web_competition_teams'))
@@ -55,7 +71,9 @@ class Migration(SchemaMigration):
         },
         u'authenz.cluser': {
             'Meta': {'object_name': 'ClUser'},
+            'ORCID': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'bibtex': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'biography': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'contact_email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'null': 'True', 'blank': 'True'}),
             'date_joined': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
@@ -68,6 +86,7 @@ class Migration(SchemaMigration):
             'is_superuser': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'last_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
+            'linkedin': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'method_description': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'method_name': ('django.db.models.fields.CharField', [], {'max_length': '20', 'null': 'True', 'blank': 'True'}),
             'organization_or_affiliation': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
@@ -81,7 +100,8 @@ class Migration(SchemaMigration):
             'team_members': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'team_name': ('django.db.models.fields.CharField', [], {'max_length': '64', 'null': 'True', 'blank': 'True'}),
             'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
-            'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
+            'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'}),
+            'webpage': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'})
         },
         u'contenttypes.contenttype': {
             'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
@@ -99,22 +119,38 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'image': ('django.db.models.fields.files.FileField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'image_url_base': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'last_modified': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'members': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['authenz.ClUser']", 'null': 'True', 'through': u"orm['teams.TeamMembership']", 'blank': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'reason': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'status': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['teams.TeamStatus']", 'null': 'True'})
         },
         u'teams.teammembership': {
             'Meta': {'object_name': 'TeamMembership'},
             'end_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_accepted': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'is_invitation': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'is_request': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'message': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'reason': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'start_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
+            'status': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['teams.TeamMembershipStatus']", 'null': 'True'}),
             'team': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['teams.Team']"}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['authenz.ClUser']"})
+        },
+        u'teams.teammembershipstatus': {
+            'Meta': {'object_name': 'TeamMembershipStatus'},
+            'codename': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'}),
+            'description': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '30'})
+        },
+        u'teams.teamstatus': {
+            'Meta': {'object_name': 'TeamStatus'},
+            'codename': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'}),
+            'description': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '30'})
         },
         u'web.competition': {
             'Meta': {'ordering': "['end_date']", 'object_name': 'Competition'},
@@ -143,6 +179,7 @@ class Migration(SchemaMigration):
             'modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'competitioninfo_modified_by'", 'to': u"orm['authenz.ClUser']"}),
             'original_yaml_file': ('django.db.models.fields.TextField', [], {'default': "''", 'null': 'True', 'blank': 'True'}),
             'published': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'require_team_approval': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'reward': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
             'secret_key': ('django.db.models.fields.CharField', [], {'max_length': '36', 'blank': 'True'}),
             'show_datasets_from_yaml': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
@@ -232,6 +269,7 @@ class Migration(SchemaMigration):
             'stdout_file': ('django.db.models.fields.files.FileField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'submission_number': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
             'submitted_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'team': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'team'", 'null': 'True', 'to': u"orm['teams.Team']"}),
             'team_name': ('django.db.models.fields.CharField', [], {'max_length': '64', 'null': 'True', 'blank': 'True'}),
             'when_made_public': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'when_unmade_public': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'})
