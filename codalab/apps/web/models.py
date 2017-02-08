@@ -54,19 +54,23 @@ logger = logging.getLogger(__name__)
 
 ## Needed for computation service handling
 ## Hack for now
+#StorageClass = get_storage_class(settings.DEFAULT_FILE_STORAGE)
+#try:
+#    BundleStorage = StorageClass(account_name=settings.BUNDLE_AZURE_ACCOUNT_NAME,
+#                                        account_key=settings.BUNDLE_AZURE_ACCOUNT_KEY,
+#                                        azure_container=settings.BUNDLE_AZURE_CONTAINER)
+#
+#    PublicStorage = StorageClass(account_name=settings.AZURE_ACCOUNT_NAME,
+#                                        account_key=settings.AZURE_ACCOUNT_KEY,
+#                                        azure_container=settings.AZURE_CONTAINER)
+#
+#except:
+#    BundleStorage = StorageClass()
+#    PublicStorage = StorageClass()
+
 StorageClass = get_storage_class(settings.DEFAULT_FILE_STORAGE)
-try:
-    BundleStorage = StorageClass(account_name=settings.BUNDLE_AZURE_ACCOUNT_NAME,
-                                        account_key=settings.BUNDLE_AZURE_ACCOUNT_KEY,
-                                        azure_container=settings.BUNDLE_AZURE_CONTAINER)
-
-    PublicStorage = StorageClass(account_name=settings.AZURE_ACCOUNT_NAME,
-                                        account_key=settings.AZURE_ACCOUNT_KEY,
-                                        azure_container=settings.AZURE_CONTAINER)
-
-except:
-    BundleStorage = StorageClass()
-    PublicStorage = StorageClass()
+BundleStorage = StorageClass().get_storage(StorageClass.BUNDLE)
+PublicStorage = StorageClass().get_storage(StorageClass.PUBLIC)
 
 # Competition Content
 class ContentVisibility(models.Model):

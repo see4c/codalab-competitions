@@ -16,7 +16,7 @@ class Base(Settings):
     PORT = '8000'
     DOMAIN_NAME = 'localhost'
     SERVER_NAME = 'localhost'
-    DEBUG = False
+    DEBUG = True
     TEMPLATE_DEBUG = True
 
     #TEMPLATE_DEBUG = DEBUG
@@ -175,16 +175,16 @@ class Base(Settings):
         'guardian.backends.ObjectPermissionBackend',
     )
 
-    AWESOME_AVATAR = {
-        'width': 100,
-        'height': 100,
-
-        'select_area_width': 400,
-        'select_area_height': 300,
-
-        'save_quality': 90,
-        'save_format': 'png',
-    }
+#    AWESOME_AVATAR = {
+#        'width': 100,
+#        'height': 100,
+#
+#        'select_area_width': 400,
+#        'select_area_height': 300,
+#
+#        'save_quality': 90,
+#        'save_format': 'png',
+#    }
 
     INSTALLED_APPS = (
         # Standard django apps
@@ -222,7 +222,7 @@ class Base(Settings):
         'django_nose',
 
         # Team avatars
-        'awesome_avatar',
+#        'awesome_avatar',
 
         # CodaLab apps
         'apps.authenz',

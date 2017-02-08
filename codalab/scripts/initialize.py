@@ -23,6 +23,7 @@ from apps.web.models import (CompetitionSubmissionStatus,
                              ParticipantStatus)
 from apps.web.models import (Page)
 from django.conf import settings
+from apps.teams.models import TeamStatus, TeamMembershipStatus
 
 def migrate_data():
     """

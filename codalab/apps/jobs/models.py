@@ -6,7 +6,8 @@ import logging
 import threading
 import traceback
 
-from codalabtools.azure_extensions import AzureServiceBusQueue
+#from codalabtools.azure_extensions import AzureServiceBusQueue
+from codalab.servicebus import get_default_servicebus_queue
 from django.conf import settings
 from django.db import (models,
                        transaction)
@@ -29,10 +30,11 @@ def getQueue(name=None):
 
     queue = None
     with _lock:
-        queue = AzureServiceBusQueue(settings.SBS_NAMESPACE,
-                                     settings.SBS_ACCOUNT_KEY,
-                                     settings.SBS_ISSUER,
-                                     name)
+        #queue = AzureServiceBusQueue(settings.SBS_NAMESPACE,
+        #                             settings.SBS_ACCOUNT_KEY,
+        #                             settings.SBS_ISSUER,
+        #                             name)
+        queue = get_default_servicebus_queue(name)
         _queues[name] = queue
 
     return queue

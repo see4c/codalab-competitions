@@ -38,26 +38,37 @@ from apps.teams import models as teammodels
 from apps.web.bundles import BundleService
 from apps.web.tasks import (create_competition, evaluate_submission)
 
-from codalab.azure_storage import make_blob_sas_url, PREFERRED_STORAGE_X_MS_VERSION
+#from codalab.azure_storage import make_blob_sas_url, PREFERRED_STORAGE_X_MS_VERSION
+from django.core.files.storage import get_storage_class
 
 logger = logging.getLogger(__name__)
 
-
-
+#def _generate_blob_sas_url(prefix, extension):
+#    """
+#    Helper to generate SAS URL for creating a BLOB.
+#    """
+#    blob_name = '{0}/{1}{2}'.format(prefix, str(uuid4()), extension)
+#    url = make_blob_sas_url(settings.BUNDLE_AZURE_ACCOUNT_NAME,
+#                            settings.BUNDLE_AZURE_ACCOUNT_KEY,
+#                            settings.BUNDLE_AZURE_CONTAINER,
+#                            blob_name,
+#                            permission='w',
+#                            duration=60)
+#    logger.debug("_generate_blob_sas_url: sas=%s; blob_name=%s.", url, blob_name)
+#    return {'url': url, 'id': blob_name, 'version': PREFERRED_STORAGE_X_MS_VERSION}
 
 def _generate_blob_sas_url(prefix, extension):
-    """
-    Helper to generate SAS URL for creating a BLOB.
-    """
+
     blob_name = '{0}/{1}{2}'.format(prefix, str(uuid4()), extension)
-    url = make_blob_sas_url(settings.BUNDLE_AZURE_ACCOUNT_NAME,
-                            settings.BUNDLE_AZURE_ACCOUNT_KEY,
-                            settings.BUNDLE_AZURE_CONTAINER,
-                            blob_name,
-                            permission='w',
-                            duration=60)
+
+    StorageClass = get_storage_class(settings.DEFAULT_FILE_STORAGE)
+    BundleStorage = StorageClass().get_storage(StorageClass.BUNDLE)
+
+    url = BundleStorage.make_blob_sas_url(blob_name, permission='w', duration=60)
+
     logger.debug("_generate_blob_sas_url: sas=%s; blob_name=%s.", url, blob_name)
-    return {'url': url, 'id': blob_name, 'version': PREFERRED_STORAGE_X_MS_VERSION}
+    return {'url': url, 'id': blob_name, 'version': BundleStorage.preferred_version}
+
 
 @permission_classes((permissions.IsAuthenticated,))
 class CompetitionCreationSasApi(views.APIView):
@@ -71,6 +82,7 @@ class CompetitionCreationSasApi(views.APIView):
         """
         prefix = 'competition/upload/{0}'.format(request.user.id)
         response_data = _generate_blob_sas_url(prefix, '.zip')
+
         return Response(response_data, status=status.HTTP_201_CREATED)
 
 @permission_classes((permissions.IsAuthenticated,))
@@ -527,6 +539,8 @@ class CompetitionSubmissionSasApi(views.APIView):
             raise ParseError(detail='Invalid competition ID.')
         prefix = 'competition/{0}/submission/{1}'.format(competition_id, request.user.id)
         response_data = _generate_blob_sas_url(prefix, '.zip')
+
+
         return Response(response_data, status=status.HTTP_201_CREATED)
 
 @permission_classes((permissions.IsAuthenticated,))

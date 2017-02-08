@@ -7,8 +7,9 @@ from django.forms import CheckboxInput
 root_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "codalab")
 sys.path.append(root_dir)
 
-from codalab.azure_storage import make_blob_sas_url, PREFERRED_STORAGE_X_MS_VERSION
+#from codalab.azure_storage import make_blob_sas_url, PREFERRED_STORAGE_X_MS_VERSION
 from django.conf import settings
+from django.core.files.storage import get_storage_class
 
 register = template.Library()
 
@@ -57,11 +58,16 @@ def get_sas(value):
     Helper to generate SAS URL for any BLOB.
     """
     blob_name = value
-    url = make_blob_sas_url(settings.BUNDLE_AZURE_ACCOUNT_NAME,
-                            settings.BUNDLE_AZURE_ACCOUNT_KEY,
-                            settings.BUNDLE_AZURE_CONTAINER,
-                            blob_name,permission='r',
-                            duration=60)
+    #url = make_blob_sas_url(settings.BUNDLE_AZURE_ACCOUNT_NAME,
+    #                        settings.BUNDLE_AZURE_ACCOUNT_KEY,
+    #                        settings.BUNDLE_AZURE_CONTAINER,
+    #                        blob_name,permission='r',
+    #                        duration=60)
+    StorageClass = get_storage_class(settings.DEFAULT_FILE_STORAGE)
+    BundleStorage = StorageClass().get_storage(StorageClass.BUNDLE)
+
+    url = BundleStorage.make_blob_sas_url(blob_name, permission='r', duration=60)
+
     print url
     return url
 

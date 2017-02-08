@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic import TemplateView
+from storage import storage_api
 
 admin.autodiscover()
 
@@ -29,5 +30,9 @@ urlpatterns = patterns('',
         {'document_root': settings.MEDIA_ROOT}),
 
     # JS Reverse for saner AJAX calls
-    url(r'^jsreverse/$', 'django_js_reverse.views.urls_js', name='js_reverse')
+    url(r'^jsreverse/$', 'django_js_reverse.views.urls_js', name='js_reverse'),
+
+    # Local storage service
+    url(r'^storage/(?P<blob_name>.*)/(?P<path>.*)$', storage_api)
+
 )

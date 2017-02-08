@@ -13,6 +13,16 @@ class Migration(SchemaMigration):
                       self.gf('django.db.models.fields.BooleanField')(default=False),
                       keep_default=False)
 
+        # Adding field 'ClUser.image'
+        db.add_column(u'authenz_cluser', 'image',
+                      self.gf('django.db.models.fields.files.FileField')(max_length=100, null=True, blank=True),
+                      keep_default=False)
+
+        # Adding field 'ClUser.image_url_base'
+        db.add_column(u'authenz_cluser', 'image_url_base',
+                      self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True),
+                      keep_default=False)
+
         # Adding field 'ClUser.biography'
         db.add_column(u'authenz_cluser', 'biography',
                       self.gf('django.db.models.fields.TextField')(null=True, blank=True),
@@ -42,6 +52,12 @@ class Migration(SchemaMigration):
     def backwards(self, orm):
         # Deleting field 'ClUser.email_on_submission_finished_successfully'
         db.delete_column(u'authenz_cluser', 'email_on_submission_finished_successfully')
+
+        # Deleting field 'ClUser.image'
+        db.delete_column(u'authenz_cluser', 'image')
+
+        # Deleting field 'ClUser.image_url_base'
+        db.delete_column(u'authenz_cluser', 'image_url_base')
 
         # Deleting field 'ClUser.biography'
         db.delete_column(u'authenz_cluser', 'biography')
@@ -85,6 +101,8 @@ class Migration(SchemaMigration):
             'first_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
             'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Group']", 'symmetrical': 'False', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'image': ('django.db.models.fields.files.FileField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'image_url_base': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'is_staff': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'is_superuser': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
